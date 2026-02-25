@@ -14,6 +14,86 @@ export interface AIOptimizeResult {
 }
 
 /**
+ * 压缩图片到指定尺寸
+ */
+function resizeImage(img: HTMLImageElement, maxWidth: number = 2048, maxHeight: number = 2048): HTMLCanvasElement {
+  const canvas = document.createElement('canvas');
+  let width = img.width;
+  let height = img.height;
+
+  // 计算缩放比例
+  if (width > maxWidth || height > maxHeight) {
+    const ratio = Math.min(maxWidth / width, maxHeight / height);
+    width = Math.floor(width * ratio);
+    height = Math.floor(height * ratio);
+  }
+
+  canvas.width = width;
+  canvas.height = height;
+
+  const ctx = canvas.getContext('2d');
+  if (!ctx) {
+    throw new Error('Failed to get canvas context');
+  }
+
+  // 使用更好的图像质量
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(img, 0, 0, width, height);
+
+  return canvas;
+}
+
+/**
+ * 将Canvas转换为Base64格式，控制文件大小
+ */
+function canvasToBase64(canvas: HTMLCanvasElement, maxSizeKB: number = 4096): string {
+  // 首先尝试PNG格式（无损）
+  let base64 = canvas.toDataURL('image/png');
+  let sizeKB = Math.round((base64.length * 3) / 4 / 1024);
+
+  console.log('Original image size:', sizeKB, 'KB');
+
+  // 如果PNG太大，尝试JPEG格式并调整质量
+  if (sizeKB > maxSizeKB) {
+    let quality = 0.9;
+    while (sizeKB > maxSizeKB && quality > 0.3) {
+      base64 = canvas.toDataURL('image/jpeg', quality);
+      sizeKB = Math.round((base64.length * 3) / 4 / 1024);
+      console.log(`JPEG quality ${quality}:`, sizeKB, 'KB');
+      quality -= 0.1;
+    }
+  }
+
+  // 如果还是太大，缩小尺寸
+  if (sizeKB > maxSizeKB) {
+    const scale = Math.sqrt(maxSizeKB / sizeKB) * 0.9;
+    const newWidth = Math.floor(canvas.width * scale);
+    const newHeight = Math.floor(canvas.height * scale);
+
+    console.log(`Resizing to ${newWidth}x${newHeight}`);
+
+    const newCanvas = document.createElement('canvas');
+    newCanvas.width = newWidth;
+    newCanvas.height = newHeight;
+    const newCtx = newCanvas.getContext('2d');
+
+    if (!newCtx) {
+      throw new Error('Failed to get canvas context');
+    }
+
+    newCtx.imageSmoothingEnabled = true;
+    newCtx.imageSmoothingQuality = 'high';
+    newCtx.drawImage(canvas, 0, 0, newWidth, newHeight);
+
+    return canvasToBase64(newCanvas, maxSizeKB);
+  }
+
+  console.log('Final image size:', sizeKB, 'KB');
+  return base64;
+}
+
+/**
  * 将图片转换为Base64格式
  */
 export function imageToBase64(imageSrc: string): Promise<string> {
@@ -22,19 +102,19 @@ export function imageToBase64(imageSrc: string): Promise<string> {
     img.crossOrigin = 'anonymous';
 
     img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext('2d');
+      try {
+        console.log('Original image size:', img.width, 'x', img.height);
 
-      if (!ctx) {
-        reject(new Error('Failed to get canvas context'));
-        return;
+        // 压缩图片
+        const canvas = resizeImage(img, 2048, 2048);
+
+        // 转换为base64，控制大小在4MB以内
+        const base64 = canvasToBase64(canvas, 4096);
+
+        resolve(base64);
+      } catch (error) {
+        reject(error);
       }
-
-      ctx.drawImage(img, 0, 0);
-      const base64 = canvas.toDataURL('image/png');
-      resolve(base64);
     };
 
     img.onerror = () => {
