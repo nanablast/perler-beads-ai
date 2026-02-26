@@ -110,6 +110,8 @@ export default function Home() {
   
   // 新增：色号系统选择状态
   const [selectedColorSystem, setSelectedColorSystem] = useState<ColorSystem>('MARD');
+  // 新增：色号系统折叠状态
+  const [isColorSystemCollapsed, setIsColorSystemCollapsed] = useState<boolean>(true);
   
   const [activeBeadPalette, setActiveBeadPalette] = useState<PaletteColor[]>(() => {
       return fullBeadPalette; // 默认使用全部颜色
@@ -131,6 +133,8 @@ export default function Home() {
   const [isEraseMode, setIsEraseMode] = useState<boolean>(false);
   // 新增状态变量：控制打赏弹窗
   const [isDonationModalOpen, setIsDonationModalOpen] = useState<boolean>(false);
+  // 新增状态变量：控制教程弹窗
+  const [isTutorialModalOpen, setIsTutorialModalOpen] = useState<boolean>(false);
   const [customPaletteSelections, setCustomPaletteSelections] = useState<PaletteSelections>({});
   const [isCustomPaletteEditorOpen, setIsCustomPaletteEditorOpen] = useState<boolean>(false);
   const [isCustomPalette, setIsCustomPalette] = useState<boolean>(false);
@@ -638,7 +642,7 @@ export default function Home() {
     setTotalBeadCount(0);
     setInitialGridColorKeys(new Set()); // ++ 重置初始键 ++
     // ++ 重置横轴格子数量为默认值 ++
-    const defaultGranularity = 50;
+    const defaultGranularity = 60;
     setGranularity(defaultGranularity);
     setGranularityInput(defaultGranularity.toString());
     setRemapTrigger(prev => prev + 1); // Trigger full remap for new image
@@ -690,8 +694,6 @@ export default function Home() {
     setIsManualColoringMode(false);
     setSelectedColor(null);
     setIsEraseMode(false);
-
-    alert('AI优化完成！图片已更新为像素艺术风格。');
   };
 
   // 处理一键擦除模式切换
@@ -2206,37 +2208,55 @@ export default function Home() {
 
                 {/* 色号系统选择器 */}
                 <div className="sm:col-span-2">
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 sm:mb-2">色号系统:</label>
-                  <div className="flex flex-wrap gap-2">
-                    {colorSystemOptions.map(option => (
-                      <button
-                        key={option.key}
-                        onClick={() => setSelectedColorSystem(option.key as ColorSystem)}
-                        className={`px-3 py-2 text-sm rounded-lg border transition-all duration-200 flex-shrink-0 ${
-                          selectedColorSystem === option.key
-                            ? 'bg-blue-500 text-white border-blue-500 shadow-md transform scale-105'
-                            : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-gray-600'
-                        }`}
-                      >
-                        {option.name}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* 自定义色板按钮 */}
-                <div className="sm:col-span-2 mt-3">
                   <button
-                    onClick={() => setIsCustomPaletteEditorOpen(true)}
-                    className="w-full py-2.5 px-3 flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-medium rounded-lg shadow-sm transition-all duration-200 hover:shadow-md hover:from-blue-600 hover:to-purple-600"
+                    onClick={() => setIsColorSystemCollapsed(!isColorSystemCollapsed)}
+                    className="flex items-center justify-between w-full text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 sm:mb-2"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M4 2a2 2 0 00-2 2v11a3 3 0 106 0V4a2 2 0 00-2-2H4zm1 14a1 1 0 100-2 1 1 0 000 2zm5-1.757l4.9-4.9a2 2 0 000-2.828L13.485 5.1a2 2 0 00-2.828 0L10 5.757v8.486zM16 18H9.071l6-6H16a2 2 0 012 2v2a2 2 0 01-2 2z" clipRule="evenodd" />
+                    <span>色号系统:</span>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className={`h-4 w-4 transition-transform duration-200 ${isColorSystemCollapsed ? 'rotate-0' : 'rotate-180'}`}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
-                    管理色板 ({Object.values(customPaletteSelections).filter(Boolean).length} 色)
                   </button>
-                  {isCustomPalette && (
-                    <p className="text-xs text-center text-blue-500 dark:text-blue-400 mt-1.5">当前使用自定义色板</p>
+                  {!isColorSystemCollapsed && (
+                    <div className="space-y-3">
+                      <div className="flex flex-wrap gap-2">
+                        {colorSystemOptions.map(option => (
+                          <button
+                            key={option.key}
+                            onClick={() => setSelectedColorSystem(option.key as ColorSystem)}
+                            className={`px-3 py-2 text-sm rounded-lg border transition-all duration-200 flex-shrink-0 ${
+                              selectedColorSystem === option.key
+                                ? 'bg-blue-500 text-white border-blue-500 shadow-md transform scale-105'
+                                : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-gray-600'
+                            }`}
+                          >
+                            {option.name}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* 自定义色板按钮 */}
+                      <div className="mt-3">
+                        <button
+                          onClick={() => setIsCustomPaletteEditorOpen(true)}
+                          className="w-full py-2.5 px-3 flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-medium rounded-lg shadow-sm transition-all duration-200 hover:shadow-md hover:from-blue-600 hover:to-purple-600"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M4 2a2 2 0 00-2 2v11a3 3 0 106 0V4a2 2 0 00-2-2H4zm1 14a1 1 0 100-2 1 1 0 000 2zm5-1.757l4.9-4.9a2 2 0 000-2.828L13.485 5.1a2 2 0 00-2.828 0L10 5.757v8.486zM16 18H9.071l6-6H16a2 2 0 012 2v2a2 2 0 01-2 2z" clipRule="evenodd" />
+                          </svg>
+                          管理色板 ({Object.values(customPaletteSelections).filter(Boolean).length} 色)
+                        </button>
+                        {isCustomPalette && (
+                          <p className="text-xs text-center text-blue-500 dark:text-blue-400 mt-1.5">当前使用自定义色板</p>
+                        )}
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>
@@ -2614,21 +2634,35 @@ export default function Home() {
       <footer className="w-full md:max-w-4xl mt-10 mb-6 py-6 text-center text-xs sm:text-sm text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700 bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800/50 rounded-lg shadow-inner">
 
         {/* Donation button styles are likely fine */}
-        <button
-          onClick={() => setIsDonationModalOpen(true)}
-          className="mb-5 px-6 py-2.5 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-full shadow-lg transition-all duration-300 hover:shadow-xl hover:translate-y-[-2px] flex items-center justify-center mx-auto"
-        >
-          {/* SVG and Text inside button */}
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M18 8h1a2 2 0 0 1 2 2v1c0 1.1-.9 2-2 2h-1" fill="#f9a8d4" />
-            <path d="M6 8h12v9a3 3 0 0 1-3 3H9a3 3 0 0 1-3-3V8z" fill="#f9a8d4" />
-            <path d="M6 8V7a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v1" fill="#f472b6" />
-            <path d="M12 16v-4" stroke="#7d2a5a" />
-            <path d="M9.5 14.5L9 16" stroke="#7d2a5a" />
-            <path d="M14.5 14.5L15 16" stroke="#7d2a5a" />
-          </svg>
-          <span>请作者喝一杯奶茶</span>
-        </button>
+        <div className="flex gap-3 justify-center mb-5">
+          <button
+            onClick={() => setIsDonationModalOpen(true)}
+            className="px-6 py-2.5 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-full shadow-lg transition-all duration-300 hover:shadow-xl hover:translate-y-[-2px] flex items-center"
+          >
+            {/* SVG and Text inside button */}
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 8h1a2 2 0 0 1 2 2v1c0 1.1-.9 2-2 2h-1" fill="#f9a8d4" />
+              <path d="M6 8h12v9a3 3 0 0 1-3 3H9a3 3 0 0 1-3-3V8z" fill="#f9a8d4" />
+              <path d="M6 8V7a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v1" fill="#f472b6" />
+              <path d="M12 16v-4" stroke="#7d2a5a" />
+              <path d="M9.5 14.5L9 16" stroke="#7d2a5a" />
+              <path d="M14.5 14.5L15 16" stroke="#7d2a5a" />
+            </svg>
+            <span>请作者喝一杯奶茶</span>
+          </button>
+          
+          {/* 帮助教程按钮 */}
+          <button
+            onClick={() => setIsTutorialModalOpen(true)}
+            className="px-6 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-full shadow-lg transition-all duration-300 hover:shadow-xl hover:translate-y-[-2px] flex items-center"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <path d="m9 12 2 2 4-4" />
+            </svg>
+            <span>帮助教程</span>
+          </button>
+        </div>
 
         {/* Copyright text color */}
         <p className="font-medium text-gray-600 dark:text-gray-300">
@@ -2638,6 +2672,89 @@ export default function Home() {
 
       {/* Donation Modal - 现在使用新的组件 */}
       <DonationModal isOpen={isDonationModalOpen} onClose={() => setIsDonationModalOpen(false)} />
+
+      {/* 帮助教程弹窗 */}
+      {isTutorialModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col">
+            {/* 标题栏 */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="m9 12 2 2 4-4" />
+                </svg>
+                使用教程
+              </h2>
+              <button
+                onClick={() => setIsTutorialModalOpen(false)}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* 内容区域 */}
+            <div className="flex-1 overflow-auto p-6">
+              <div className="space-y-6">
+                {/* 步骤 1 */}
+                <div className="space-y-2">
+                  <h3 className="text-md font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 text-sm font-medium">1</span>
+                    一般使用流程
+                  </h3>
+                  <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                    <p className="text-gray-700 dark:text-gray-300">
+                      上传图片 → AI优化 → 去掉背景 → 下载图纸 → 专心拼豆
+                    </p>
+                  </div>
+                </div>
+
+                {/* 步骤 2 */}
+                <div className="space-y-2">
+                  <h3 className="text-md font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 text-sm font-medium">2</span>
+                    处理模式
+                  </h3>
+                  <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                    <p className="text-gray-700 dark:text-gray-300">
+                      可选卡通模式和真实模式，真实模式会使用更细的颜色更逼真更复杂。
+                    </p>
+                  </div>
+                </div>
+
+                {/* 步骤 3 */}
+                <div className="space-y-2">
+                  <h3 className="text-md font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 text-sm font-medium">3</span>
+                    档案管理
+                  </h3>
+                  <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                    <p className="text-gray-700 dark:text-gray-300">
+                      下载档案可以下次直接导入使用。
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 底部按钮 */}
+            <div className="flex items-center justify-end px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+              <button
+                onClick={() => setIsTutorialModalOpen(false)}
+                className="px-6 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors flex items-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                我知道了
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 使用导入的下载设置弹窗组件 */}
       <DownloadSettingsModal 
