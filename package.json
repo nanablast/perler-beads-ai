@@ -3,10 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "dev": "node scripts/run-next.js dev",
+    "build": "node scripts/run-next.js build",
+    "start": "node scripts/run-next.js start",
+    "lint": "node scripts/run-next.js lint"
   },
   "dependencies": {
     "@vercel/analytics": "^1.5.0",

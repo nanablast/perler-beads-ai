@@ -91,6 +91,7 @@ import FloatingToolbar from '../components/FloatingToolbar';
 import MagnifierTool from '../components/MagnifierTool';
 import MagnifierSelectionOverlay from '../components/MagnifierSelectionOverlay';
 import { loadPaletteSelections, savePaletteSelections, presetToSelections, PaletteSelections } from '../utils/localStorageUtils';
+import { getSafeLocalStorage } from '../utils/safeLocalStorage';
 import { TRANSPARENT_KEY, transparentColorData } from '../utils/pixelEditingUtils';
 
 // 1. 导入新的 DonationModal 组件
@@ -363,7 +364,8 @@ export default function Home() {
     } else {
         console.log('所有数据都无效，清除localStorage并重新初始化');
         // 如果本地数据无效，清除localStorage并默认选择所有颜色
-        localStorage.removeItem('customPerlerPaletteSelections');
+        const storage = getSafeLocalStorage();
+        storage?.removeItem('customPerlerPaletteSelections');
         const allHexValues = fullBeadPalette.map(color => color.hex.toUpperCase());
         const initialSelections = presetToSelections(allHexValues, allHexValues);
       setCustomPaletteSelections(initialSelections);
@@ -400,11 +402,17 @@ export default function Home() {
   };
 
   const handleProceedToFocusMode = () => {
+    const storage = getSafeLocalStorage();
+    if (!storage) {
+      alert('当前环境不支持本地存储，无法进入专心拼豆模式。');
+      return;
+    }
+
     // 保存数据到localStorage供专心拼豆模式使用
-    localStorage.setItem('focusMode_pixelData', JSON.stringify(mappedPixelData));
-    localStorage.setItem('focusMode_gridDimensions', JSON.stringify(gridDimensions));
-    localStorage.setItem('focusMode_colorCounts', JSON.stringify(colorCounts));
-    localStorage.setItem('focusMode_selectedColorSystem', selectedColorSystem);
+    storage.setItem('focusMode_pixelData', JSON.stringify(mappedPixelData));
+    storage.setItem('focusMode_gridDimensions', JSON.stringify(gridDimensions));
+    storage.setItem('focusMode_colorCounts', JSON.stringify(colorCounts));
+    storage.setItem('focusMode_selectedColorSystem', selectedColorSystem);
     
     // 跳转到专心拼豆页面
     window.location.href = '/focus';
@@ -1084,6 +1092,9 @@ export default function Home() {
       const currentUrl = window.location.href;
       const currentHostname = window.location.hostname;
       const targetDomain = 'https://perlerbeads.zippland.com/';
+      const allowedExternalHostnames = new Set([
+        'nas.zerobyte.top',
+      ]);
       
       // 排除localhost和127.0.0.1等本地开发环境
       const isLocalhost = currentHostname === 'localhost' || 
@@ -1091,9 +1102,10 @@ export default function Home() {
                          currentHostname.startsWith('192.168.') ||
                          currentHostname.startsWith('10.') ||
                          currentHostname.endsWith('.local');
+      const isAllowedExternalHost = allowedExternalHostnames.has(currentHostname);
       
       // 检查当前URL是否不是目标域名，且不是本地开发环境
-      if (!currentUrl.startsWith(targetDomain) && !isLocalhost) {
+      if (!currentUrl.startsWith(targetDomain) && !isLocalhost && !isAllowedExternalHost) {
         console.log(`当前URL: ${currentUrl}`);
         console.log(`目标URL: ${targetDomain}`);
         console.log('正在重定向到官方域名...');
@@ -1116,8 +1128,8 @@ export default function Home() {
         
         // 执行重定向
         window.location.replace(redirectUrl);
-      } else if (isLocalhost) {
-        console.log(`检测到本地开发环境 (${currentHostname})，跳过重定向`);
+      } else if (isLocalhost || isAllowedExternalHost) {
+        console.log(`检测到允许访问域名 (${currentHostname})，跳过重定向`);
       }
     }
   }, []); // 只在组件首次挂载时执行

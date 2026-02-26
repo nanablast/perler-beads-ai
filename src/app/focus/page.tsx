@@ -22,6 +22,7 @@ import DownloadSettingsModal from '../../components/DownloadSettingsModal';
 import { getColorKeyByHex, ColorSystem } from '../../utils/colorSystemUtils';
 import { downloadImage } from '../../utils/imageDownloader';
 import { GridDownloadOptions } from '../../types/downloadTypes';
+import { getSafeLocalStorage } from '../../utils/safeLocalStorage';
 
 interface FocusModeState {
   // 当前状态
@@ -139,10 +140,16 @@ export default function FocusMode() {
 
   // 从localStorage加载数据
   useEffect(() => {
-    const savedPixelData = localStorage.getItem('focusMode_pixelData');
-    const savedGridDimensions = localStorage.getItem('focusMode_gridDimensions');
-    const savedColorCounts = localStorage.getItem('focusMode_colorCounts');
-    const savedColorSystem = localStorage.getItem('focusMode_selectedColorSystem');
+    const storage = getSafeLocalStorage();
+    if (!storage) {
+      window.location.href = '/';
+      return;
+    }
+
+    const savedPixelData = storage.getItem('focusMode_pixelData');
+    const savedGridDimensions = storage.getItem('focusMode_gridDimensions');
+    const savedColorCounts = storage.getItem('focusMode_colorCounts');
+    const savedColorSystem = storage.getItem('focusMode_selectedColorSystem');
 
     if (savedPixelData && savedGridDimensions && savedColorCounts) {
       try {

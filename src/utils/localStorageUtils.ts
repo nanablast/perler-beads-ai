@@ -1,3 +1,4 @@
+import { getSafeLocalStorage } from './safeLocalStorage';
 const STORAGE_KEY = 'customPerlerPaletteSelections';
 
 export interface PaletteSelections {
@@ -8,8 +9,13 @@ export interface PaletteSelections {
  * 保存自定义色板选择状态到localStorage
  */
 export function savePaletteSelections(selections: PaletteSelections): void {
+  const storage = getSafeLocalStorage();
+  if (!storage) {
+    return;
+  }
+
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(selections));
+    storage.setItem(STORAGE_KEY, JSON.stringify(selections));
   } catch (error) {
     console.error("无法保存色板选择到本地存储:", error);
   }
@@ -19,14 +25,23 @@ export function savePaletteSelections(selections: PaletteSelections): void {
  * 从localStorage加载自定义色板选择状态
  */
 export function loadPaletteSelections(): PaletteSelections | null {
+  const storage = getSafeLocalStorage();
+  if (!storage) {
+    return null;
+  }
+
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = storage.getItem(STORAGE_KEY);
     if (stored) {
       return JSON.parse(stored);
     }
   } catch (error) {
     console.error("无法从本地存储加载色板选择:", error);
-    localStorage.removeItem(STORAGE_KEY); // 清除无效数据
+    try {
+      storage.removeItem(STORAGE_KEY); // 清除无效数据
+    } catch (removeError) {
+      console.error("无法清除无效本地存储数据:", removeError);
+    }
   }
   return null;
 }

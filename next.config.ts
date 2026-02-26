@@ -22,7 +22,7 @@ const withPWA = require("next-pwa")({
 });
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  allowedDevOrigins: ['nas.zerobyte.top'],
 };
 
 export default withPWA(nextConfig);
