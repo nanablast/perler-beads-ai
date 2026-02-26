@@ -2,8 +2,20 @@
 
 因为市面上的拼豆软件差强人意 ，所以我基于开源项目：https://github.com/Zippland/perler-beads ， 我加上AI优化了项目，AI辅助优化图片功能，写了一个专门生成拼豆图纸的网站。 经过大量测试，我觉得已经可以达到 一键生成拼豆图纸了！
 
-[perlerbeads.zippland.com](perlerbeads.zippland.com)
+## 展示案例
 
+核心就是： ai制作图纸  ，关键就是颜色尽可能少，颗粒尽可能少，各种各样图纸风格都兼容，同时表达尽可能清楚，这就是我的ai能够做到。
+
+![1.png](docs/1.png)
+![2.png](docs/2.png)
+![3.png](docs/3.png)
+![4.png](docs/4.png)
+![5.png](docs/5.png)
+![6.png](docs/6.png)
+
+
+
+ 
 ❓
 想解决的（市场上拼豆软件的）问题：
 1. 颜色识别不准确，
@@ -222,7 +234,7 @@ AI功能的实现涉及以下文件：
 
 1.  克隆项目:
     ```bash
-    git clone https://github.com/Zippland/perler-beads.git
+    git clone https://github.com/liangdabiao/perler-beads-ai.git
     cd perler-beads
     ```
 2.  安装依赖:
