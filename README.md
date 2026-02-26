@@ -114,7 +114,6 @@
     *   `MagnifierTool`: 放大镜工具
     *   `ImageCropperModal`: 图片裁剪弹窗
     *   `AIOptimizeModal`: AI优化弹窗
-    *   `DonationModal`: 打赏弹窗
 *   **本地存储**: 使用 `localStorage` 存储用户的调色板选择和设置。
 *   **颜色系统**: 支持多种色号系统的映射和转换。
 
