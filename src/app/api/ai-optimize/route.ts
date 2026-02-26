@@ -200,10 +200,34 @@ async function submitTask(imageBase64: string, prompt: string) {
   console.log('Submit API Response:', response.status, responseText);
 
   if (!response.ok) {
+    // 尝试解析错误信息
+    try {
+      const errorData = JSON.parse(responseText);
+      const errorCode = errorData.status || errorData.code;
+      const errorMessage = errorData.message || '';
+
+      // 图片风险检测未通过
+      if (errorCode === 50411 || errorMessage.includes('Risk')) {
+        throw new Error(`IMAGE_RISK: 图片未能通过安全检测，请尝试使用其他图片。`);
+      }
+    } catch {
+      // 解析失败，使用原始错误
+    }
     throw new Error(`API request failed: ${response.status} ${responseText}`);
   }
 
+  // 检查业务错误码
   const data = JSON.parse(responseText);
+  if (data.status && data.status !== 10000) {
+    const errorCode = data.status;
+    const errorMessage = data.message || '';
+
+    // 图片风险检测未通过
+    if (errorCode === 50411 || errorMessage.includes('Risk')) {
+      throw new Error(`IMAGE_RISK: 图片未能通过安全检测，请尝试使用其他图片。`);
+    }
+  }
+
   return data;
 }
 
@@ -262,11 +286,38 @@ async function queryTask(taskId: string) {
   const responseText = await response.text();
   console.log('Query API Response:', response.status, responseText);
 
-  if (!response.ok) {
+  // 解析响应数据
+  let data;
+  try {
+    data = JSON.parse(responseText);
+  } catch {
     throw new Error(`API query failed: ${response.status} ${responseText}`);
   }
 
-  const data = JSON.parse(responseText);
+  // 检查HTTP错误状态
+  if (!response.ok) {
+    const errorCode = data.status || data.code;
+    const errorMessage = data.message || '';
+
+    // 图片风险检测未通过
+    if (errorCode === 50411 || errorMessage.includes('Risk')) {
+      throw new Error(`IMAGE_RISK: 图片未能通过安全检测，请尝试使用其他图片。`);
+    }
+
+    throw new Error(`API query failed: ${response.status} ${responseText}`);
+  }
+
+  // 检查业务错误码（即使HTTP 200也可能有业务错误）
+  if (data.status && data.status !== 10000) {
+    const errorCode = data.status;
+    const errorMessage = data.message || '';
+
+    // 图片风险检测未通过
+    if (errorCode === 50411 || errorMessage.includes('Risk')) {
+      throw new Error(`IMAGE_RISK: 图片未能通过安全检测，请尝试使用其他图片。`);
+    }
+  }
+
   return data;
 }
 
@@ -288,7 +339,16 @@ async function waitForTaskCompletion(taskId: string, maxAttempts = 60, intervalM
       }
       throw new Error('Task completed but no image data returned');
     } else if (result.data && result.data.status === 'failed') {
-      throw new Error(`Task failed: ${result.data.message || 'Unknown error'}`);
+      // 处理特定的错误代码
+      const errorCode = result.status || result.code;
+      const errorMessage = result.message || 'Unknown error';
+
+      // 图片风险检测未通过
+      if (errorCode === 50411 || errorMessage.includes('Risk')) {
+        throw new Error(`IMAGE_RISK: 图片未能通过安全检测，请尝试使用其他图片。`);
+      }
+
+      throw new Error(`Task failed: ${errorMessage}`);
     }
 
     // 等待后重试

@@ -1,6 +1,6 @@
 // AI图片优化工具函数
 
-const DEFAULT_PROMPT = '图片修改为：pixel art style, 16-bit, retro game aesthetic, sharp focus, high contrast, clean lines, detailed pixel art, masterpiece, best quality';
+const DEFAULT_PROMPT = '图片修改为：chibi画风，背景白底。pixel art style, 16-bit, retro game aesthetic, sharp focus, high contrast, clean lines, detailed pixel art, masterpiece, best quality';
 
 export interface AIOptimizeOptions {
   customPrompt?: string;
@@ -158,8 +158,17 @@ export async function optimizeImageWithAI(
     onProgress?.(80);
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || `API request failed: ${response.status}`);
+      // 尝试解析JSON错误，如果失败则使用文本
+      let errorMessage: string;
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || `API request failed: ${response.status}`;
+      } catch {
+        // 如果不是JSON，尝试获取文本
+        const errorText = await response.text();
+        errorMessage = errorText || `API request failed: ${response.status}`;
+      }
+      throw new Error(errorMessage);
     }
 
     const result = await response.json();

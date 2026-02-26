@@ -180,7 +180,7 @@ console.log('Base64 length:', imageBase64.length);
 const requestBody = {
   req_key: 'jimeng_t2i_v40',
   binary_data_base64: [imageBase64],
-  prompt: '图片修改为：pixel art style, 16-bit, retro game aesthetic, sharp focus, high contrast, clean lines, detailed pixel art, masterpiece, best quality',
+  prompt: '图片修改为：chibi画风，背景白底。pixel art style, 16-bit, retro game aesthetic, sharp focus, high contrast, clean lines, detailed pixel art, masterpiece, best quality',
   scale: 0.5,
   force_single: true,
 };

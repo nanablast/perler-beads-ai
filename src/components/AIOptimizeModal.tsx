@@ -22,7 +22,7 @@ export default function AIOptimizeModal({
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [customPrompt, setCustomPrompt] = useState('');
 
-  const DEFAULT_PROMPT = '图片修改为：pixel art style, 16-bit, retro game aesthetic, sharp focus, high contrast, clean lines, detailed pixel art, masterpiece, best quality';
+  const DEFAULT_PROMPT = '图片修改为：chibi画风，背景白底。pixel art style, 16-bit, retro game aesthetic, sharp focus, high contrast, clean lines, detailed pixel art, masterpiece, best quality';
 
   const handleOptimize = useCallback(async () => {
     if (!imageSrc) return;
@@ -45,10 +45,22 @@ export default function AIOptimizeModal({
         const dataUrl = await downloadImageAsDataURL(result.imageUrl);
         setPreviewImage(dataUrl);
       } else {
-        setError(result.error || '优化失败，请重试');
+        // 处理错误，包括图片风险错误
+        let errorMessage = result.error || '优化失败，请重试';
+        if (errorMessage.includes('IMAGE_RISK')) {
+          errorMessage = '图片未能通过安全检测，请尝试使用其他图片。可能的原因：\n• 图片包含敏感内容\n• 图片格式不支持\n• 图片质量过低';
+        }
+        setError(errorMessage);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : '发生未知错误');
+      let errorMessage = err instanceof Error ? err.message : '发生未知错误';
+
+      // 处理图片风险错误
+      if (errorMessage.includes('IMAGE_RISK')) {
+        errorMessage = '图片未能通过安全检测，请尝试使用其他图片。可能的原因：\n• 图片包含敏感内容\n• 图片格式不支持\n• 图片质量过低';
+      }
+
+      setError(errorMessage);
     } finally {
       setIsProcessing(false);
     }
@@ -162,12 +174,12 @@ export default function AIOptimizeModal({
           {/* 错误提示 */}
           {error && (
             <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-              <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-2">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="text-sm text-red-600 dark:text-red-400 flex items-start gap-2">
+                <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                {error}
-              </p>
+                <span className="whitespace-pre-line">{error}</span>
+              </div>
             </div>
           )}
         </div>
