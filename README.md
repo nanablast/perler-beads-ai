@@ -1,6 +1,7 @@
 # 拼豆底稿生成器 (Perler Beads Generator)
 
-因为市面上的拼豆软件差强人意（可能是我没用到好的），所以花了大概两个小时，写了一个专门生成拼豆图纸的网站：
+因为市面上的拼豆软件差强人意 ，所以我基于开源项目：https://github.com/Zippland/perler-beads ， 加上AI，
+写了一个专门生成拼豆图纸的网站。 经过大量测试，我觉得已经可以达到 一键生成拼豆图纸了！
 
 [perlerbeads.zippland.com](perlerbeads.zippland.com)
 
